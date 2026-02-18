@@ -1,0 +1,152 @@
+<!-- MainWindow.xaml
+     Borderless, transparent, always-on-top widget window.
+     Supports multiple crypto symbols with left/right navigation. -->
+<Window x:Class="CryptoPrice.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Crypto Price"
+        Width="320" Height="120"
+        SizeToContent="WidthAndHeight"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen">
+
+    <Border CornerRadius="12"
+            Background="#CC1A1A2E"
+            Padding="12,8"
+            MouseLeftButtonDown="Border_MouseLeftButtonDown">
+
+        <Border.LayoutTransform>
+            <ScaleTransform x:Name="WidgetScale" ScaleX="1" ScaleY="1"/>
+        </Border.LayoutTransform>
+
+        <Border.ContextMenu>
+            <ContextMenu x:Name="MainContextMenu" Opened="ContextMenu_Opened">
+                <MenuItem x:Name="CryptoListMenu" Header="Crypto List">
+                    <!-- Filled dynamically in code-behind -->
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Zoom In  (+)" Click="ZoomIn_Click"/>
+                <MenuItem Header="Zoom Out (−)" Click="ZoomOut_Click"/>
+                <MenuItem Header="Reset Size" Click="ZoomReset_Click"/>
+                <Separator/>
+                <MenuItem Header="Exit" Click="Exit_Click"/>
+            </ContextMenu>
+        </Border.ContextMenu>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header: prev arrow, symbol label, status dot, next arrow, close button -->
+            <Grid Grid.Row="0">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+
+                    <!-- Previous symbol -->
+                    <Button Content="&#xE76B;"
+                            FontFamily="Segoe MDL2 Assets" FontSize="14"
+                            Click="PrevSymbol_Click" Cursor="Hand"
+                            Foreground="#99FFFFFF" Background="Transparent"
+                            BorderThickness="0" Padding="4,0" VerticalAlignment="Center"
+                            ToolTip="Previous">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bd" Background="Transparent"
+                                                    CornerRadius="4" Padding="4,2">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Current symbol name -->
+                    <TextBlock x:Name="SymbolLabel"
+                               Text="BTC / USD"
+                               Foreground="#BBFFFFFF"
+                               FontFamily="Segoe UI"
+                               FontSize="13" FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               Margin="6,0"/>
+
+                    <!-- Connection status indicator -->
+                    <Ellipse x:Name="StatusIndicator"
+                             Width="7" Height="7"
+                             Fill="#FF4CAF50"
+                             Margin="0,0,6,0"
+                             VerticalAlignment="Center"/>
+
+                    <!-- Next symbol -->
+                    <Button Content="&#xE76C;"
+                            FontFamily="Segoe MDL2 Assets" FontSize="14"
+                            Click="NextSymbol_Click" Cursor="Hand"
+                            Foreground="#99FFFFFF" Background="Transparent"
+                            BorderThickness="0" Padding="4,0" VerticalAlignment="Center"
+                            ToolTip="Next">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bd" Background="Transparent"
+                                                    CornerRadius="4" Padding="4,2">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Price row: price + 24h change -->
+            <StackPanel Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <TextBlock x:Name="PriceText"
+                           Text="Connecting…"
+                           Foreground="White"
+                           FontFamily="Segoe UI"
+                           FontSize="28"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+
+                <!-- 24h percentage change -->
+                <TextBlock x:Name="ChangeText"
+                           Text=""
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           HorizontalAlignment="Center"
+                           Margin="0,-2,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
