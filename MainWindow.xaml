@@ -15,7 +15,8 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterScreen">
 
-    <Border CornerRadius="12"
+    <Border x:Name="MainBorder"
+            CornerRadius="12"
             Background="#CC1A1A2E"
             Padding="12,8"
             MouseLeftButtonDown="Border_MouseLeftButtonDown">
@@ -33,6 +34,8 @@
                 <MenuItem Header="Zoom In  (+)" Click="ZoomIn_Click"/>
                 <MenuItem Header="Zoom Out (−)" Click="ZoomOut_Click"/>
                 <MenuItem Header="Reset Size" Click="ZoomReset_Click"/>
+                <Separator/>
+                <MenuItem Header="Settings…" Click="Settings_Click"/>
                 <Separator/>
                 <MenuItem Header="Exit" Click="Exit_Click"/>
             </ContextMenu>

@@ -34,10 +34,13 @@ public partial class MainWindow : Window
     private static readonly string SettingsPath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, "symbols.json");
 
+    private AppSettings _appSettings = AppSettings.Load();
+
     public MainWindow()
     {
         InitializeComponent();
         LoadSymbols();
+        ApplySettings(_appSettings);
         Loaded += (_, _) => StartStream();
     }
 
@@ -340,6 +343,30 @@ public partial class MainWindow : Window
 
     private void ZoomReset_Click(object sender, RoutedEventArgs e)
         => ApplyZoom(1.0);
+
+    // ─── Settings ─────────────────────────────────────────────────
+
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SettingsDialog(_appSettings, ApplySettings) { Owner = this };
+        dialog.ShowDialog();
+        _appSettings = dialog.Result;
+        _appSettings.Save();
+    }
+
+    private void ApplySettings(AppSettings s)
+    {
+        try
+        {
+            MainBorder.Background = new BrushConverter().ConvertFromString(s.BackgroundColor) as SolidColorBrush
+                                    ?? MainBorder.Background;
+            PriceText.Foreground = new BrushConverter().ConvertFromString(s.PriceFontColor) as SolidColorBrush
+                                   ?? PriceText.Foreground;
+            SymbolLabel.Foreground = new BrushConverter().ConvertFromString(s.LabelFontColor) as SolidColorBrush
+                                    ?? SymbolLabel.Foreground;
+        }
+        catch { /* invalid color string — keep current appearance */ }
+    }
 
     // ─── Window interactions ────────────────────────────────────────
 
