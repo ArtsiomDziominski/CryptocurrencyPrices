@@ -54,7 +54,7 @@
                             VerticalAlignment="Center">
 
                     <!-- Previous symbol -->
-                    <Button Content="&#xE76B;"
+                    <Button x:Name="PrevButton" Content="&#xE76B;"
                             FontFamily="Segoe MDL2 Assets" FontSize="14"
                             Click="PrevSymbol_Click" Cursor="Hand"
                             Foreground="#99FFFFFF" Background="Transparent"
@@ -99,7 +99,7 @@
                              VerticalAlignment="Center"/>
 
                     <!-- Next symbol -->
-                    <Button Content="&#xE76C;"
+                    <Button x:Name="NextButton" Content="&#xE76C;"
                             FontFamily="Segoe MDL2 Assets" FontSize="14"
                             Click="NextSymbol_Click" Cursor="Hand"
                             Foreground="#99FFFFFF" Background="Transparent"

@@ -20,6 +20,11 @@ public class AppSettings
     // Symbol label color
     public string LabelFontColor { get; set; } = "#BBFFFFFF";
 
+    // Visibility toggles
+    public bool ShowNavigation { get; set; } = true;
+    public bool ShowSymbolLabel { get; set; } = true;
+    public bool ShowChange24h { get; set; } = true;
+
     public static AppSettings Load()
     {
         try

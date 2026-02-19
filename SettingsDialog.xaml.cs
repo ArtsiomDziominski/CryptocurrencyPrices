@@ -50,6 +50,10 @@ public partial class SettingsDialog : Window
         FgHexBox.Text = _fgHex;
         OpacitySlider.Value = _bgOpacity;
 
+        ChkNavigation.IsChecked = current.ShowNavigation;
+        ChkSymbolLabel.IsChecked = current.ShowSymbolLabel;
+        ChkChange24h.IsChecked = current.ShowChange24h;
+
         RefreshBgPreview();
         RefreshFgPreview();
     }
@@ -193,15 +197,21 @@ public partial class SettingsDialog : Window
         catch { return Colors.White; }
     }
 
+    // ── Visibility checkboxes ───────────────────────────────────────
+    private void Visibility_Changed(object sender, RoutedEventArgs e) => NotifyChanged();
+
     // ── Live apply ────────────────────────────────────────────────
     private AppSettings BuildCurrentSettings()
     {
         var alpha = (byte)Math.Round(_bgOpacity / 100.0 * 255);
         return new AppSettings
         {
-            BackgroundColor = $"#{alpha:X2}{NormalizeHex(_bgHex, 6)}",
-            PriceFontColor  = $"#{NormalizeHex(_fgHex, 6)}",
-            LabelFontColor  = $"#BB{NormalizeHex(_fgHex, 6)}"
+            BackgroundColor  = $"#{alpha:X2}{NormalizeHex(_bgHex, 6)}",
+            PriceFontColor   = $"#{NormalizeHex(_fgHex, 6)}",
+            LabelFontColor   = $"#BB{NormalizeHex(_fgHex, 6)}",
+            ShowNavigation   = ChkNavigation.IsChecked == true,
+            ShowSymbolLabel  = ChkSymbolLabel.IsChecked == true,
+            ShowChange24h    = ChkChange24h.IsChecked == true
         };
     }
 

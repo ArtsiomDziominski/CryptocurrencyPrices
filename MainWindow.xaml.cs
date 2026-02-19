@@ -366,6 +366,16 @@ public partial class MainWindow : Window
                                     ?? SymbolLabel.Foreground;
         }
         catch { /* invalid color string — keep current appearance */ }
+
+        var navVis = s.ShowNavigation ? Visibility.Visible : Visibility.Collapsed;
+        PrevButton.Visibility = navVis;
+        NextButton.Visibility = navVis;
+
+        var labelVis = s.ShowSymbolLabel ? Visibility.Visible : Visibility.Collapsed;
+        SymbolLabel.Visibility = labelVis;
+        StatusIndicator.Visibility = labelVis;
+
+        ChangeText.Visibility = s.ShowChange24h ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ─── Window interactions ────────────────────────────────────────
