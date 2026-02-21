@@ -53,6 +53,7 @@ public partial class SettingsDialog : Window
         ChkNavigation.IsChecked = current.ShowNavigation;
         ChkSymbolLabel.IsChecked = current.ShowSymbolLabel;
         ChkChange24h.IsChecked = current.ShowChange24h;
+        ChkSparkline.IsChecked = current.ShowSparkline;
         ChkRunAtStartup.IsChecked = current.RunAtStartup;
 
         RefreshBgPreview();
@@ -216,6 +217,7 @@ public partial class SettingsDialog : Window
             ShowNavigation   = ChkNavigation.IsChecked == true,
             ShowSymbolLabel  = ChkSymbolLabel.IsChecked == true,
             ShowChange24h    = ChkChange24h.IsChecked == true,
+            ShowSparkline    = ChkSparkline.IsChecked == true,
             RunAtStartup     = ChkRunAtStartup.IsChecked == true
         };
     }

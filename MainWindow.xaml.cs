@@ -1,12 +1,11 @@
 using System.IO;
-using System.Net.Http;
-using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using CryptoPrice.Services;
+using static CryptoPrice.Constants;
 
 namespace CryptoPrice;
 
@@ -17,21 +16,13 @@ namespace CryptoPrice;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private const string WsBaseUrl = "wss://stream.binance.com:9443/ws/";
-    private const string TickerApiUrl = "https://api.binance.com/api/v3/ticker/24hr?symbol=";
-    private const int ReconnectDelayMs = 5_000;
-    private const int ThrottleIntervalMs = 250;
-    private const int TickerRefreshMs = 60_000; // refresh 24h change every 60s
-
-    // Persisted symbol list and the currently displayed index.
     private readonly List<string> _symbols = new() { "btcusdt", "ethusdt" };
     private int _currentIndex;
 
     private CancellationTokenSource _wsCts = new();
     private DateTime _lastUiUpdate = DateTime.MinValue;
-    private static readonly HttpClient Http = new();
 
-    private static readonly string SettingsPath = Path.Combine(
+    private static readonly string SymbolsPath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, "symbols.json");
 
     private AppSettings _appSettings = AppSettings.Load();
@@ -49,7 +40,6 @@ public partial class MainWindow : Window
 
     private string CurrentSymbol => _symbols[_currentIndex];
 
-    /// <summary>Format "btcusdt" → "BTC / USDT" for display.</summary>
     private static string FormatLabel(string symbol)
     {
         var s = symbol.ToUpperInvariant();
@@ -67,7 +57,6 @@ public partial class MainWindow : Window
         RestartStream();
     }
 
-    /// <summary>Cancel the current WebSocket and start a new one for the selected symbol.</summary>
     private void RestartStream()
     {
         _wsCts.Cancel();
@@ -84,8 +73,10 @@ public partial class MainWindow : Window
     private void StartStream()
     {
         SymbolLabel.Text = FormatLabel(CurrentSymbol);
-        _ = RunWebSocketLoopAsync(CurrentSymbol, _wsCts.Token);
-        _ = RunTickerLoopAsync(CurrentSymbol, _wsCts.Token);
+        var ct = _wsCts.Token;
+        _ = BinanceService.ConnectWebSocketAsync(CurrentSymbol, OnTrade, SetConnected, ct);
+        _ = RunTickerLoopAsync(CurrentSymbol, ct);
+        _ = RunKlinesLoopAsync(CurrentSymbol, ct);
     }
 
     // ─── Persistence ────────────────────────────────────────────────
@@ -94,8 +85,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (!File.Exists(SettingsPath)) return;
-            var json = File.ReadAllText(SettingsPath);
+            if (!File.Exists(SymbolsPath)) return;
+            var json = File.ReadAllText(SymbolsPath);
             var list = JsonSerializer.Deserialize<List<string>>(json);
             if (list is { Count: > 0 })
             {
@@ -113,121 +104,23 @@ public partial class MainWindow : Window
         try
         {
             var json = JsonSerializer.Serialize(_symbols);
-            File.WriteAllText(SettingsPath, json);
+            File.WriteAllText(SymbolsPath, json);
         }
         catch { /* non-critical */ }
     }
 
-    // ─── WebSocket lifecycle ────────────────────────────────────────
+    // ─── Trade callback (from WebSocket via BinanceService) ─────────
 
-    private async Task RunWebSocketLoopAsync(string symbol, CancellationToken ct)
+    private void OnTrade(decimal price)
     {
-        var url = $"{WsBaseUrl}{symbol}@trade";
+        var now = DateTime.UtcNow;
+        if ((now - _lastUiUpdate).TotalMilliseconds < ThrottleIntervalMs) return;
+        _lastUiUpdate = now;
 
-        while (!ct.IsCancellationRequested)
-        {
-            try
-            {
-                using var ws = new ClientWebSocket();
-                await ws.ConnectAsync(new Uri(url), ct);
-                SetConnected(true);
-                await ReceiveLoopAsync(ws, ct);
-            }
-            catch (OperationCanceledException) { break; }
-            catch { SetConnected(false); }
+        var formatted = price.ToString("C2",
+            System.Globalization.CultureInfo.GetCultureInfo("en-US"));
 
-            try { await Task.Delay(ReconnectDelayMs, ct); }
-            catch (OperationCanceledException) { break; }
-        }
-    }
-
-    private async Task ReceiveLoopAsync(ClientWebSocket ws, CancellationToken ct)
-    {
-        var buffer = new byte[4096];
-        while (ws.State == WebSocketState.Open && !ct.IsCancellationRequested)
-        {
-            var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), ct);
-            if (result.MessageType == WebSocketMessageType.Close) break;
-
-            var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            ProcessTradeMessage(json);
-        }
-    }
-
-    // ─── 24h ticker (REST API) ─────────────────────────────────────
-
-    /// <summary>
-    /// Periodically fetches the 24h price change percentage from
-    /// Binance REST API and updates the ChangeText label.
-    /// </summary>
-    private async Task RunTickerLoopAsync(string symbol, CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested)
-        {
-            await Fetch24hChangeAsync(symbol, ct);
-            try { await Task.Delay(TickerRefreshMs, ct); }
-            catch (OperationCanceledException) { break; }
-        }
-    }
-
-    private async Task Fetch24hChangeAsync(string symbol, CancellationToken ct)
-    {
-        try
-        {
-            var url = $"{TickerApiUrl}{symbol.ToUpperInvariant()}";
-            var response = await Http.GetStringAsync(url, ct);
-            using var doc = JsonDocument.Parse(response);
-
-            if (!doc.RootElement.TryGetProperty("priceChangePercent", out var pctEl))
-                return;
-
-            var pctStr = pctEl.GetString();
-            if (pctStr is null || !decimal.TryParse(pctStr,
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out var pct))
-                return;
-
-            Dispatcher.Invoke(() => Update24hChange(pct));
-        }
-        catch { /* network error — will retry next cycle */ }
-    }
-
-    private void Update24hChange(decimal pct)
-    {
-        var sign = pct >= 0 ? "+" : "";
-        ChangeText.Text = $"24ч: {sign}{pct:F2}%";
-        ChangeText.Foreground = pct >= 0
-            ? new SolidColorBrush(Color.FromRgb(76, 175, 80))   // green
-            : new SolidColorBrush(Color.FromRgb(244, 67, 54));  // red
-    }
-
-    // ─── JSON parsing & UI update ───────────────────────────────────
-
-    private void ProcessTradeMessage(string json)
-    {
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("p", out var priceElement)) return;
-
-            var priceStr = priceElement.GetString();
-            if (priceStr is null || !decimal.TryParse(priceStr,
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out var price))
-                return;
-
-            var now = DateTime.UtcNow;
-            if ((now - _lastUiUpdate).TotalMilliseconds < ThrottleIntervalMs) return;
-            _lastUiUpdate = now;
-
-            var formatted = price.ToString("C2",
-                System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-
-            Dispatcher.Invoke(() => PriceText.Text = formatted);
-        }
-        catch { /* malformed message — ignored */ }
+        Dispatcher.Invoke(() => PriceText.Text = formatted);
     }
 
     private void SetConnected(bool connected)
@@ -242,17 +135,54 @@ public partial class MainWindow : Window
         });
     }
 
+    // ─── 24h ticker loop ────────────────────────────────────────────
+
+    private async Task RunTickerLoopAsync(string symbol, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            var pct = await BinanceService.Fetch24hChangeAsync(symbol, ct);
+            if (pct.HasValue)
+                Dispatcher.Invoke(() => Update24hChange(pct.Value));
+
+            try { await Task.Delay(TickerRefreshMs, ct); }
+            catch (OperationCanceledException) { break; }
+        }
+    }
+
+    private void Update24hChange(decimal pct)
+    {
+        var sign = pct >= 0 ? "+" : "";
+        ChangeText.Text = $"24ч: {sign}{pct:F2}%";
+        ChangeText.Foreground = pct >= 0
+            ? new SolidColorBrush(Color.FromRgb(76, 175, 80))
+            : new SolidColorBrush(Color.FromRgb(244, 67, 54));
+    }
+
+    // ─── Klines / sparkline loop ────────────────────────────────────
+
+    private async Task RunKlinesLoopAsync(string symbol, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            if (_appSettings.ShowSparkline)
+            {
+                var prices = await BinanceService.FetchKlinesAsync(symbol, ct: ct);
+                if (prices.Count > 0)
+                    Dispatcher.Invoke(() => Sparkline.UpdatePrices(prices));
+            }
+
+            try { await Task.Delay(KlinesRefreshMs, ct); }
+            catch (OperationCanceledException) { break; }
+        }
+    }
+
     // ─── Context menu: Crypto List (add / remove / switch) ──────────
 
-    /// <summary>
-    /// Dynamically populate the "Crypto List" submenu each time
-    /// the context menu opens.
-    /// </summary>
     private void ContextMenu_Opened(object sender, RoutedEventArgs e)
     {
         CryptoListMenu.Items.Clear();
 
-        // One item per symbol — click to switch, bold = current
         for (var i = 0; i < _symbols.Count; i++)
         {
             var idx = i;
@@ -268,12 +198,10 @@ public partial class MainWindow : Window
 
         CryptoListMenu.Items.Add(new Separator());
 
-        // "Add…" opens a small input dialog
         var addItem = new MenuItem { Header = "Add…" };
         addItem.Click += AddSymbol_Click;
         CryptoListMenu.Items.Add(addItem);
 
-        // "Remove current" (disabled when only one symbol left)
         var removeItem = new MenuItem
         {
             Header = $"Remove {FormatLabel(CurrentSymbol)}",
@@ -378,6 +306,7 @@ public partial class MainWindow : Window
         StatusIndicator.Visibility = labelVis;
 
         ChangeText.Visibility = s.ShowChange24h ? Visibility.Visible : Visibility.Collapsed;
+        Sparkline.Visibility = s.ShowSparkline ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // ─── Window interactions ────────────────────────────────────────

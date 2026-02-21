@@ -28,6 +28,7 @@ public class AppSettings
     public bool ShowNavigation { get; set; } = true;
     public bool ShowSymbolLabel { get; set; } = true;
     public bool ShowChange24h { get; set; } = true;
+    public bool ShowSparkline { get; set; } = true;
     public bool RunAtStartup { get; set; }
 
     public static AppSettings Load()

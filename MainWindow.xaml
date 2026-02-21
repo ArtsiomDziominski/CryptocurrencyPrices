@@ -4,6 +4,7 @@
 <Window x:Class="CryptoPrice.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:CryptoPrice.Controls"
         Title="Crypto Price"
         Width="320" Height="120"
         SizeToContent="WidthAndHeight"
@@ -44,7 +45,8 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header: prev arrow, symbol label, status dot, next arrow, close button -->
@@ -150,6 +152,10 @@
                            HorizontalAlignment="Center"
                            Margin="0,-2,0,0"/>
             </StackPanel>
+
+            <!-- Sparkline mini-chart -->
+            <controls:SparklineControl x:Name="Sparkline" Grid.Row="2"
+                                       Height="40" Margin="0,4,0,0"/>
         </Grid>
     </Border>
 </Window>

@@ -1,0 +1,12 @@
+<UserControl x:Class="CryptoPrice.Controls.SparklineControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="40">
+
+    <Canvas x:Name="ChartCanvas" ClipToBounds="True">
+        <Polyline x:Name="SparklineLine"
+                  StrokeThickness="1.5"
+                  StrokeLineJoin="Round"
+                  Stroke="#4CAF50"/>
+    </Canvas>
+</UserControl>
