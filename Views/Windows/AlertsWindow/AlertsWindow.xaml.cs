@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 using CryptoPrice.Models;
 
-namespace CryptoPrice.Views;
+namespace CryptoPrice.Views.Windows;
 
 /// <summary>
 /// View-model wrapper for displaying a PriceAlert in the ItemsControl.

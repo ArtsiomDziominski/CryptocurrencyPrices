@@ -1,4 +1,4 @@
-<Window x:Class="CryptoPrice.Views.InputDialog"
+<Window x:Class="CryptoPrice.Views.Dialogs.InputDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Add Crypto"

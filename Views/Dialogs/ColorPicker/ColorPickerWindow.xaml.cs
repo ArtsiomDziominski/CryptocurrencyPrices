@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace CryptoPrice.Views;
+namespace CryptoPrice.Views.Dialogs;
 
 public partial class ColorPickerWindow : Window
 {

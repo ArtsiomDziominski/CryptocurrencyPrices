@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 using CryptoPrice.Models;
 
-namespace CryptoPrice.Views;
+namespace CryptoPrice.Views.Dialogs;
 
 public partial class SettingsDialog : Window
 {

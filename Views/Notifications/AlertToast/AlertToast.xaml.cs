@@ -5,7 +5,7 @@ using System.Windows.Threading;
 using CryptoPrice.Models;
 using static CryptoPrice.Models.Constants;
 
-namespace CryptoPrice.Views;
+namespace CryptoPrice.Views.Notifications;
 
 public partial class AlertToast : Window
 {

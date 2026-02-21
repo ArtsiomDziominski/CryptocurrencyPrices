@@ -8,9 +8,11 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using CryptoPrice.Models;
 using CryptoPrice.Services;
+using CryptoPrice.Views.Dialogs;
+using CryptoPrice.Views.Notifications;
 using static CryptoPrice.Models.Constants;
 
-namespace CryptoPrice.Views;
+namespace CryptoPrice.Views.Windows;
 
 /// <summary>
 /// Transparent desktop widget that streams live crypto prices
