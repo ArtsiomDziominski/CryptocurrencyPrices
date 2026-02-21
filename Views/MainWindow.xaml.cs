@@ -310,7 +310,8 @@ public partial class MainWindow : Window
 
         foreach (var alert in triggered)
         {
-            alert.IsEnabled = false;
+            if (!alert.Persistent)
+                alert.IsEnabled = false;
             TriggerAlert(alert, price);
         }
 

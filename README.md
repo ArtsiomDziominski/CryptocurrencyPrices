@@ -32,7 +32,7 @@ dotnet run
 Single-file self-contained executable (no .NET installation required on target machine):
 
 ```bash
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -o publish
 ```
 
 | Flag | Description |
@@ -42,15 +42,8 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 | `--self-contained true` | Bundles .NET runtime into the executable |
 | `-p:PublishSingleFile=true` | Packs everything into a single `.exe` |
 | `-p:IncludeNativeLibrariesForSelfExtract=true` | Embeds native libraries inside the exe |
-| `-p:PublishTrimmed=true` | Removes unused code to reduce file size |
-
-Output: `bin/Release/net10.0-windows/win-x64/publish/CryptoPrice.exe`
-
-To publish into a custom folder:
-
-```bash
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishTrimmed=true -o publish
-```
+| `-p:PublishReadyToRun=true` | AOT-компиляция для ускорения запуска |
+| `-o publish` | Output directory |
 
 ## Usage
 

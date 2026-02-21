@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 using CryptoPrice.Models;
 
@@ -31,6 +32,7 @@ public class AlertViewModel
             var parts = new List<string>();
             if (_alert.PlaySound) parts.Add("sound");
             if (_alert.FlashWidget) parts.Add("flash");
+            if (_alert.Persistent) parts.Add("persistent");
             return parts.Count > 0 ? string.Join(", ", parts) : "silent";
         }
     }
@@ -90,13 +92,20 @@ public partial class AlertsWindow : Window
             Symbol = symbolItem.Tag?.ToString() ?? "btcusdt",
             TargetPrice = price,
             PlaySound = ChkSound.IsChecked == true,
-            FlashWidget = ChkFlash.IsChecked == true
+            FlashWidget = ChkFlash.IsChecked == true,
+            Persistent = ChkPersistent.IsChecked == true
         };
 
         _alerts.Add(alert);
         PriceAlert.SaveAll(_alerts);
         PriceBox.Text = "";
         RefreshList();
+    }
+
+    private void PriceBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+            AddAlert_Click(sender, e);
     }
 
     private void DeleteAlert_Click(object sender, RoutedEventArgs e)

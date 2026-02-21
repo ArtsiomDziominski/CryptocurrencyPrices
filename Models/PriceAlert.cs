@@ -11,6 +11,7 @@ public class PriceAlert
     public bool IsEnabled { get; set; } = true;
     public bool PlaySound { get; set; } = true;
     public bool FlashWidget { get; set; } = true;
+    public bool Persistent { get; set; }
 
     private static readonly string FilePath = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, "alerts.json");

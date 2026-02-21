@@ -142,7 +142,8 @@
                          FontFamily="Segoe UI" FontSize="13"
                          Padding="6,4"
                          Background="#FF2A2A3E" Foreground="White"
-                         BorderBrush="#55FFFFFF" CaretBrush="White">
+                         BorderBrush="#55FFFFFF" CaretBrush="White"
+                         KeyDown="PriceBox_KeyDown">
                     <TextBox.ToolTip>Target price (e.g. 100000)</TextBox.ToolTip>
                 </TextBox>
             </Grid>
@@ -165,6 +166,12 @@
                           Content="Flash widget" IsChecked="True"
                           Foreground="#CCFFFFFF" FontFamily="Segoe UI" FontSize="12"
                           Margin="0,0,16,0" VerticalAlignment="Center"/>
+
+                <CheckBox x:Name="ChkPersistent" Grid.Column="2"
+                          Content="Persistent"
+                          Foreground="#CCFFFFFF" FontFamily="Segoe UI" FontSize="12"
+                          Margin="0,0,0,0" VerticalAlignment="Center"
+                          ToolTip="Keep tracking this price level after alert triggers"/>
 
                 <Button Grid.Column="3" Content="Add Alert" Width="90"
                         Click="AddAlert_Click"
