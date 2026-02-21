@@ -76,6 +76,7 @@ public partial class MainWindow : Window
 
         SymbolLabel.Text = FormatLabel(CurrentSymbol);
         PriceText.Text = "Connecting…";
+        PriceText.MinWidth = 0;
         ChangeText.Text = "";
         _lastUiUpdate = DateTime.MinValue;
 
@@ -135,6 +136,12 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(() =>
         {
             PriceText.Text = formatted;
+
+            PriceText.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var desiredWidth = PriceText.DesiredSize.Width;
+            if (desiredWidth > PriceText.MinWidth)
+                PriceText.MinWidth = desiredWidth;
+
             CheckAlerts(CurrentSymbol, price);
         });
     }
