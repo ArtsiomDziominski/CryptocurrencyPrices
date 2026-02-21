@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         LoadSymbols();
         ApplySettings(_appSettings);
+        ApplyZoom(_appSettings.ZoomScale);
         _appSettings.ApplyStartup();
         Loaded += (_, _) =>
         {
@@ -269,22 +270,28 @@ public partial class MainWindow : Window
     private const double ZoomMin = 0.5;
     private const double ZoomMax = 2.5;
 
-    private void ApplyZoom(double newScale)
+    private void ApplyZoom(double newScale, bool persist = false)
     {
         newScale = Math.Clamp(newScale, ZoomMin, ZoomMax);
         WidgetScale.ScaleX = newScale;
         WidgetScale.ScaleY = newScale;
         SizeToContent = SizeToContent.WidthAndHeight;
+
+        if (persist)
+        {
+            _appSettings.ZoomScale = newScale;
+            _appSettings.Save();
+        }
     }
 
     private void ZoomIn_Click(object sender, RoutedEventArgs e)
-        => ApplyZoom(WidgetScale.ScaleX + ZoomStep);
+        => ApplyZoom(WidgetScale.ScaleX + ZoomStep, persist: true);
 
     private void ZoomOut_Click(object sender, RoutedEventArgs e)
-        => ApplyZoom(WidgetScale.ScaleX - ZoomStep);
+        => ApplyZoom(WidgetScale.ScaleX - ZoomStep, persist: true);
 
     private void ZoomReset_Click(object sender, RoutedEventArgs e)
-        => ApplyZoom(1.0);
+        => ApplyZoom(1.0, persist: true);
 
     // ─── Alerts ──────────────────────────────────────────────────
 
@@ -416,6 +423,8 @@ public partial class MainWindow : Window
 
         ChangeText.Visibility = s.ShowChange24h ? Visibility.Visible : Visibility.Collapsed;
         Sparkline.Visibility = s.ShowSparkline ? Visibility.Visible : Visibility.Collapsed;
+
+        ApplyZoom(s.ZoomScale);
     }
 
     // ─── Window interactions ────────────────────────────────────────

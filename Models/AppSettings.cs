@@ -31,6 +31,9 @@ public class AppSettings
     public bool ShowSparkline { get; set; } = true;
     public bool RunAtStartup { get; set; }
 
+    // Widget zoom scale (0.5 – 2.5, default 1.0)
+    public double ZoomScale { get; set; } = 1.0;
+
     public static AppSettings Load()
     {
         try

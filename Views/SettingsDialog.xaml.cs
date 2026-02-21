@@ -16,6 +16,7 @@ public partial class SettingsDialog : Window
     private string _bgHex;
     private int _bgOpacity;   // 0-100
     private string _fgHex;
+    private double _zoomPercent; // 50-250 (slider value)
 
     // ── Preset palettes ────────────────────────────────────────────
     private static readonly string[] BgPresets =
@@ -57,6 +58,9 @@ public partial class SettingsDialog : Window
         ChkChange24h.IsChecked = current.ShowChange24h;
         ChkSparkline.IsChecked = current.ShowSparkline;
         ChkRunAtStartup.IsChecked = current.RunAtStartup;
+
+        _zoomPercent = Math.Round(current.ZoomScale * 100);
+        ZoomSlider.Value = _zoomPercent;
 
         RefreshBgPreview();
         RefreshFgPreview();
@@ -207,6 +211,16 @@ public partial class SettingsDialog : Window
     // ── Run at startup ─────────────────────────────────────────────
     private void RunAtStartup_Changed(object sender, RoutedEventArgs e) => NotifyChanged();
 
+    // ── Zoom slider ─────────────────────────────────────────────────
+    private void ZoomSlider_ValueChanged(object sender,
+        RoutedPropertyChangedEventArgs<double> e)
+    {
+        _zoomPercent = Math.Round(e.NewValue);
+        if (ZoomLabel != null)
+            ZoomLabel.Text = $"{(int)_zoomPercent}%";
+        NotifyChanged();
+    }
+
     // ── Live apply ────────────────────────────────────────────────
     private AppSettings BuildCurrentSettings()
     {
@@ -220,7 +234,8 @@ public partial class SettingsDialog : Window
             ShowSymbolLabel  = ChkSymbolLabel.IsChecked == true,
             ShowChange24h    = ChkChange24h.IsChecked == true,
             ShowSparkline    = ChkSparkline.IsChecked == true,
-            RunAtStartup     = ChkRunAtStartup.IsChecked == true
+            RunAtStartup     = ChkRunAtStartup.IsChecked == true,
+            ZoomScale        = _zoomPercent / 100.0
         };
     }
 
