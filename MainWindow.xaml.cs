@@ -1,9 +1,11 @@
 using System.IO;
+using System.Media;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using CryptoPrice.Services;
 using static CryptoPrice.Constants;
 
@@ -26,6 +28,8 @@ public partial class MainWindow : Window
         AppDomain.CurrentDomain.BaseDirectory, "symbols.json");
 
     private AppSettings _appSettings = AppSettings.Load();
+    private List<PriceAlert> _alerts = PriceAlert.LoadAll();
+    private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
 
     public MainWindow()
     {
@@ -33,7 +37,11 @@ public partial class MainWindow : Window
         LoadSymbols();
         ApplySettings(_appSettings);
         _appSettings.ApplyStartup();
-        Loaded += (_, _) => StartStream();
+        Loaded += (_, _) =>
+        {
+            StartStream();
+            _ = RunAlertPollingLoopAsync(_wsCts.Token);
+        };
     }
 
     // ─── Symbol management ──────────────────────────────────────────
@@ -120,7 +128,11 @@ public partial class MainWindow : Window
         var formatted = price.ToString("C2",
             System.Globalization.CultureInfo.GetCultureInfo("en-US"));
 
-        Dispatcher.Invoke(() => PriceText.Text = formatted);
+        Dispatcher.Invoke(() =>
+        {
+            PriceText.Text = formatted;
+            CheckAlerts(CurrentSymbol, price);
+        });
     }
 
     private void SetConnected(bool connected)
@@ -272,6 +284,101 @@ public partial class MainWindow : Window
 
     private void ZoomReset_Click(object sender, RoutedEventArgs e)
         => ApplyZoom(1.0);
+
+    // ─── Alerts ──────────────────────────────────────────────────
+
+    private void Alerts_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new AlertsWindow(_symbols, _alerts) { Owner = this };
+        dialog.ShowDialog();
+        _alerts = PriceAlert.LoadAll();
+    }
+
+    private void CheckAlerts(string symbol, decimal price)
+    {
+        var hasPrevious = _lastPrices.TryGetValue(symbol, out var previousPrice);
+        _lastPrices[symbol] = price;
+
+        if (!hasPrevious) return;
+
+        var triggered = _alerts
+            .Where(a => a.IsEnabled
+                        && a.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
+                        && a.IsCrossed(previousPrice, price))
+            .ToList();
+
+        foreach (var alert in triggered)
+        {
+            alert.IsEnabled = false;
+            TriggerAlert(alert, price);
+        }
+
+        if (triggered.Count > 0)
+            PriceAlert.SaveAll(_alerts);
+    }
+
+    private void TriggerAlert(PriceAlert alert, decimal price)
+    {
+        if (alert.PlaySound)
+            SystemSounds.Exclamation.Play();
+
+        if (alert.FlashWidget)
+            FlashBorder();
+
+        var toast = new AlertToast(alert, price);
+        toast.Show();
+    }
+
+    private void FlashBorder()
+    {
+        var originalBrush = MainBorder.Background as SolidColorBrush;
+        var originalColor = originalBrush?.Color ?? Color.FromArgb(0xCC, 0x1A, 0x1A, 0x2E);
+
+        var flashColor = Color.FromRgb(255, 193, 7); // amber
+
+        var brush = new SolidColorBrush(originalColor);
+        MainBorder.Background = brush;
+
+        var anim = new ColorAnimation
+        {
+            From = flashColor,
+            To = originalColor,
+            Duration = TimeSpan.FromMilliseconds(800),
+            AutoReverse = false,
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+        };
+
+        anim.Completed += (_, _) =>
+        {
+            MainBorder.Background = originalBrush ?? new SolidColorBrush(originalColor);
+        };
+
+        brush.BeginAnimation(SolidColorBrush.ColorProperty, anim);
+    }
+
+    private async Task RunAlertPollingLoopAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            try { await Task.Delay(AlertPollIntervalMs, ct); }
+            catch (OperationCanceledException) { break; }
+
+            var symbolsToCheck = _alerts
+                .Where(a => a.IsEnabled
+                            && !a.Symbol.Equals(CurrentSymbol, StringComparison.OrdinalIgnoreCase))
+                .Select(a => a.Symbol)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var symbol in symbolsToCheck)
+            {
+                if (ct.IsCancellationRequested) break;
+                var price = await BinanceService.FetchCurrentPriceAsync(symbol, ct);
+                if (price.HasValue)
+                    Dispatcher.Invoke(() => CheckAlerts(symbol, price.Value));
+            }
+        }
+    }
 
     // ─── Settings ─────────────────────────────────────────────────
 

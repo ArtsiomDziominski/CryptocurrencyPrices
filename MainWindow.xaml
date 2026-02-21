@@ -36,6 +36,8 @@
                 <MenuItem Header="Zoom Out (−)" Click="ZoomOut_Click"/>
                 <MenuItem Header="Reset Size" Click="ZoomReset_Click"/>
                 <Separator/>
+                <MenuItem Header="Price Alerts…" Click="Alerts_Click"/>
+                <Separator/>
                 <MenuItem Header="Settings…" Click="Settings_Click"/>
                 <Separator/>
                 <MenuItem Header="Exit" Click="Exit_Click"/>

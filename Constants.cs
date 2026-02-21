@@ -15,4 +15,8 @@ public static class Constants
     public const int ThrottleIntervalMs = 250;
     public const int TickerRefreshMs = 60_000;
     public const int KlinesRefreshMs = 300_000;
+
+    // ── Alerts ─────────────────────────────────────────────────────
+    public const int AlertPollIntervalMs = 15_000;
+    public const int AlertToastDurationMs = 25_000;
 }

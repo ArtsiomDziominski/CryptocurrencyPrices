@@ -80,6 +80,30 @@ public static class BinanceService
     }
 
     /// <summary>
+    /// Fetches the current (last traded) price for a symbol via REST.
+    /// Used for alert polling on non-active symbols.
+    /// </summary>
+    public static async Task<decimal?> FetchCurrentPriceAsync(string symbol, CancellationToken ct)
+    {
+        try
+        {
+            var url = $"{TickerApiUrl}{symbol.ToUpperInvariant()}";
+            var response = await Http.GetStringAsync(url, ct);
+            using var doc = JsonDocument.Parse(response);
+
+            if (!doc.RootElement.TryGetProperty("lastPrice", out var priceEl))
+                return null;
+
+            var priceStr = priceEl.GetString();
+            if (priceStr is not null && decimal.TryParse(priceStr,
+                    NumberStyles.Any, CultureInfo.InvariantCulture, out var price))
+                return price;
+        }
+        catch { /* network error */ }
+        return null;
+    }
+
+    /// <summary>
     /// Fetches the 24-hour price change percentage for a symbol.
     /// Returns null on failure.
     /// </summary>
