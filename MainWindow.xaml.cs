@@ -41,6 +41,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         LoadSymbols();
         ApplySettings(_appSettings);
+        _appSettings.ApplyStartup();
         Loaded += (_, _) => StartStream();
     }
 
@@ -351,6 +352,7 @@ public partial class MainWindow : Window
         var dialog = new SettingsDialog(_appSettings, ApplySettings) { Owner = this };
         dialog.ShowDialog();
         _appSettings = dialog.Result;
+        _appSettings.ApplyStartup();
         _appSettings.Save();
     }
 

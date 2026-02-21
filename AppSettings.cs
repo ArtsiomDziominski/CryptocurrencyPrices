@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using Microsoft.Win32;
 
 namespace CryptoPrice;
 
@@ -10,6 +11,9 @@ public class AppSettings
 {
     private static readonly string Path = System.IO.Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+
+    private const string StartupRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+    private const string StartupValueName = "CryptoPrice";
 
     // Background color as ARGB hex string, e.g. "#CC1A1A2E"
     public string BackgroundColor { get; set; } = "#CC1A1A2E";
@@ -24,6 +28,7 @@ public class AppSettings
     public bool ShowNavigation { get; set; } = true;
     public bool ShowSymbolLabel { get; set; } = true;
     public bool ShowChange24h { get; set; } = true;
+    public bool RunAtStartup { get; set; }
 
     public static AppSettings Load()
     {
@@ -45,4 +50,35 @@ public class AppSettings
         }
         catch { /* non-critical */ }
     }
+
+    // ── Windows startup registry ─────────────────────────────────
+
+    public static bool IsStartupEnabled()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, false);
+        return key?.GetValue(StartupValueName) != null;
+    }
+
+    public static void SetStartupEnabled(bool enable)
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, true);
+            if (key == null) return;
+
+            if (enable)
+            {
+                var exePath = Environment.ProcessPath;
+                if (exePath != null)
+                    key.SetValue(StartupValueName, $"\"{exePath}\"");
+            }
+            else
+            {
+                key.DeleteValue(StartupValueName, false);
+            }
+        }
+        catch { /* non-critical */ }
+    }
+
+    public void ApplyStartup() => SetStartupEnabled(RunAtStartup);
 }

@@ -53,6 +53,7 @@ public partial class SettingsDialog : Window
         ChkNavigation.IsChecked = current.ShowNavigation;
         ChkSymbolLabel.IsChecked = current.ShowSymbolLabel;
         ChkChange24h.IsChecked = current.ShowChange24h;
+        ChkRunAtStartup.IsChecked = current.RunAtStartup;
 
         RefreshBgPreview();
         RefreshFgPreview();
@@ -200,6 +201,9 @@ public partial class SettingsDialog : Window
     // ── Visibility checkboxes ───────────────────────────────────────
     private void Visibility_Changed(object sender, RoutedEventArgs e) => NotifyChanged();
 
+    // ── Run at startup ─────────────────────────────────────────────
+    private void RunAtStartup_Changed(object sender, RoutedEventArgs e) => NotifyChanged();
+
     // ── Live apply ────────────────────────────────────────────────
     private AppSettings BuildCurrentSettings()
     {
@@ -211,7 +215,8 @@ public partial class SettingsDialog : Window
             LabelFontColor   = $"#BB{NormalizeHex(_fgHex, 6)}",
             ShowNavigation   = ChkNavigation.IsChecked == true,
             ShowSymbolLabel  = ChkSymbolLabel.IsChecked == true,
-            ShowChange24h    = ChkChange24h.IsChecked == true
+            ShowChange24h    = ChkChange24h.IsChecked == true,
+            RunAtStartup     = ChkRunAtStartup.IsChecked == true
         };
     }
 
