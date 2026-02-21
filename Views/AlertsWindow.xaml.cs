@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CryptoPrice;
+using CryptoPrice.Models;
+
+namespace CryptoPrice.Views;
 
 /// <summary>
 /// View-model wrapper for displaying a PriceAlert in the ItemsControl.

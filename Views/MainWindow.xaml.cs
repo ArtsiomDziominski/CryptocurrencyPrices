@@ -6,10 +6,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using CryptoPrice.Models;
 using CryptoPrice.Services;
-using static CryptoPrice.Constants;
+using static CryptoPrice.Models.Constants;
 
-namespace CryptoPrice;
+namespace CryptoPrice.Views;
 
 /// <summary>
 /// Transparent desktop widget that streams live crypto prices

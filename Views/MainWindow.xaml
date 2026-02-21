@@ -1,7 +1,7 @@
 <!-- MainWindow.xaml
      Borderless, transparent, always-on-top widget window.
      Supports multiple crypto symbols with left/right navigation. -->
-<Window x:Class="CryptoPrice.MainWindow"
+<Window x:Class="CryptoPrice.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:CryptoPrice.Controls"

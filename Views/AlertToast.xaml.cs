@@ -2,9 +2,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using static CryptoPrice.Constants;
+using CryptoPrice.Models;
+using static CryptoPrice.Models.Constants;
 
-namespace CryptoPrice;
+namespace CryptoPrice.Views;
 
 public partial class AlertToast : Window
 {

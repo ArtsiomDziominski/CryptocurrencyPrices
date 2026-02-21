@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using static CryptoPrice.Constants;
+using static CryptoPrice.Models.Constants;
 
 namespace CryptoPrice.Services;
 

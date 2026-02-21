@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace CryptoPrice;
+namespace CryptoPrice.Views;
 
 public partial class InputDialog : Window
 {

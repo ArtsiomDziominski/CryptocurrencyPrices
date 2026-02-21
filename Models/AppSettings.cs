@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
 
-namespace CryptoPrice;
+namespace CryptoPrice.Models;
 
 /// <summary>
 /// Persisted user preferences for the widget appearance.

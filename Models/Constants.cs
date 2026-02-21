@@ -1,4 +1,4 @@
-namespace CryptoPrice;
+namespace CryptoPrice.Models;
 
 /// <summary>
 /// Shared constants: API endpoints and timing intervals.

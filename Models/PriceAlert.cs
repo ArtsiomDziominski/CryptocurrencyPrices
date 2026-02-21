@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace CryptoPrice;
+namespace CryptoPrice.Models;
 
 public class PriceAlert
 {
